@@ -23,21 +23,11 @@ function handle(path) {
 
 let path = document.location.pathname;
 
-document.getElementById('TencentCaptcha').click()
-
 if (path.endsWith('/passInfo/confirmOrder')) {
-    window.callbackName1 = function (res) {
-        if (res.ret === 0) {
-            isCanSubmit = true;
-            ticket = res.ticket;
-            randstr = res.randstr;
-            submitReservation(ticket, randstr)
-            alert('提交了')
-        }
-    }
+    document.getElementById('TencentCaptcha').click()
 }
 
-if (path.endsWith('/login')) {
+if (path.endsWith('/userPage/login')) {
     handle(document.location.pathname);
 }
 

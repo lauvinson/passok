@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 '''使用 PyQt5 内嵌浏览器浏览网页，并注入 Javascript 脚本实现自动化操作。'''
 import os
+import re
 import sys
 import time
 from datetime import datetime
@@ -29,6 +30,7 @@ submitParams = {
     'houseType': '1'
 }
 
+cookies = ''
 
 # 创建一个子线程
 class UpdateThread(QThread):
@@ -36,10 +38,12 @@ class UpdateThread(QThread):
     update_url = pyqtSignal(str)
 
     def run(self):
-        res = req.getDetail()
+        global cookies
+        res = req.getDetail(cookies)
         getDetailParams(submitParams, res.text)
         entry_url = settings.confirmUrl.format(submitParams['checkinDate'], submitParams['t'], submitParams['s'])
         self.update_url.emit(entry_url)
+
 
 # 创建一个子线程
 class SubmitThread(QThread):
@@ -51,29 +55,19 @@ class SubmitThread(QThread):
             time.sleep(0.05)
             self.submit.emit()
 
+
 class Browser(QWidget):
 
     def __init__(self):
         super().__init__()
         self.init_ui()
-        # 创建子线程
-        self.subThread = UpdateThread()
-        # 将子线程中的信号与timeUpdate槽函数绑定
-        self.subThread.update_url.connect(self.load)
-        # 启动子线程（开始更新时间）
-        self.subThread.start()
-
-        # 创建子线程
-        self.submitThread = SubmitThread()
-        # 将子线程中的信号与timeUpdate槽函数绑定
-        self.submitThread.submit.connect(self.submit)
-        # 启动子线程（开始更新时间）
-        self.submitThread.start()
 
         # 脚本
         self.profile = QWebEngineProfile.defaultProfile()
         self.script = QWebEngineScript()
         self.prepare_script()
+        # 绑定cookie被添加的信号槽
+        self.profile.cookieStore().cookieAdded.connect(self.__onCookieAdd)
 
     def init_ui(self):
         self.webView = QWebEngineView()
@@ -83,8 +77,7 @@ class Browser(QWidget):
 
         self.addrEdit = QLineEdit()
         self.addrEdit.returnPressed.connect(self.load_url)
-        self.webView.urlChanged.connect(
-            lambda i: self.addrEdit.setText(i.toDisplayString()))
+        self.webView.urlChanged.connect(lambda i: self.urlChange(i.toDisplayString()))
 
         self.jsEdit = QLineEdit()
         self.jsEdit.setText(os.path.split(os.path.abspath(__file__))[0] + r'/inject.js')
@@ -174,9 +167,34 @@ class Browser(QWidget):
         self.addrEdit.setText(url)
         self.webView.load(QUrl(url))
 
-    def submit(self):
-        self.webView.page().runJavaScript('if(typeof isCanSubmit !== "undefined" && isCanSubmit) {submitReservation(ticket, randstr)}')
+    @pyqtSlot()
+    def urlChange(self, url):
+        self.addrEdit.setText(url)
+        if re.search('/userPage/userCenter', url) is not None:
+            # 创建子线程
+            self.subThread = UpdateThread()
+            # 将子线程中的信号与timeUpdate槽函数绑定
+            self.subThread.update_url.connect(self.load)
+            # 启动子线程（开始更新时间）
+            self.subThread.start()
+        if re.search('/passInfo/confirmOrder', url) is not None:
+            # 创建子线程
+            self.submitThread = SubmitThread()
+            # 将子线程中的信号与timeUpdate槽函数绑定
+            self.submitThread.submit.connect(self.submit)
+            # 启动子线程（开始更新时间）
+            self.submitThread.start()
+        pass
 
+    def submit(self):
+        self.webView.page().runJavaScript(
+            'if(typeof isCanSubmit !== "undefined" && isCanSubmit) {submitReservation(ticket, randstr)}')
+
+    def __onCookieAdd(self, cookie):
+        global cookies
+        name = cookie.name().data().decode('utf-8')
+        value = cookie.value().data().decode('utf-8')
+        cookies += (name + '=' + value + ';')
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

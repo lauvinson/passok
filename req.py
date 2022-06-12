@@ -2,10 +2,7 @@ import http
 import re
 from urllib import parse
 
-import curlify
-import py2curl
 import requests
-from requests_toolbelt import MultipartEncoder
 
 import settings
 from utils import log
@@ -21,14 +18,14 @@ class MockText(object):
         self.ua = ua
 
 
-def reqDetail():
+def reqDetail(cookies):
     global i
     if i == len(user_agents) - 1:
         i = 0
     else:
         i += 1
     headers = {
-        "Cookie": settings.cookie,
+        "Cookie": cookies,
         "User-Agent": user_agents[i % 24],
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,"
                   "application/signed-exchange;v=b3;q=0.9",
@@ -64,14 +61,13 @@ def submit(submitParams):
         "Content-Type": "application/x-www-form-urlencoded"
     }
     res = requests.post(settings.submitUrl, data=parse.urlencode(submitParams), headers=headers, verify=False)
-    py2curl.render(res.request)
     return res
 
 
-def getDetail():
+def getDetail(cookies):
     while True:
         try:
-            res = reqDetail()
+            res = reqDetail(cookies)
         except:
             continue
         if res.status_code == http.HTTPStatus.OK and len(res.history) == 0:
