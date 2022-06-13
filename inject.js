@@ -15,22 +15,14 @@ NodeList.prototype.remove = HTMLCollection.prototype.remove = function () {
 document.getElementsByClassName("mask").remove()
 document.getElementsByClassName("winpop").remove()
 
-function handle(path) {
+
+let path = document.location.pathname;
+
+if (path.endsWith('/userPage/login')) {
     document.getElementById('input_idCardNo').value = username
     document.getElementById('input_pwd').value = password
 }
 
-
-let path = document.location.pathname;
-
 if (path.endsWith('/passInfo/confirmOrder')) {
     document.getElementById('TencentCaptcha').click()
-}
-
-if (path.endsWith('/userPage/login')) {
-    handle(document.location.pathname);
-}
-
-if (path.endsWith('/userPage/userCenter')) {
-
 }

@@ -18,6 +18,12 @@ class MockText(object):
         self.ua = ua
 
 
+proxies = {
+    "http": settings.proxyUrl,
+    "https": settings.proxyUrl,
+}
+
+
 def reqDetail(cookies):
     global i
     if i == len(user_agents) - 1:
@@ -43,7 +49,9 @@ def reqDetail(cookies):
         "Sec-Fetch-User": "?1",
         "Upgrade-Insecure-Requests": "1",
     }
-    res = requests.get(settings.detailUrl, headers=headers, verify=False, timeout=1)
+    res = requests.get(settings.detailUrl, headers=headers, verify=False, timeout=1,
+                       proxies=proxies
+                       )
     return res
 
 
@@ -71,16 +79,16 @@ def getDetail(cookies):
         except:
             continue
         if res.status_code == http.HTTPStatus.OK and len(res.history) == 0:
-            log("查询成功")
+            log("Found page")
             return MockText(res.text, user_agents[i % 24])
         if res.status_code == http.HTTPStatus.FORBIDDEN:
-            log("IP封禁")
+            log("IP is blocked")
             continue
         if len(res.history) != 0 and re.search('/error/index', res.history[0].headers['location']) is not None:
-            log("未开放")
+            log("Not open")
             continue
         else:
-            log("未登录")
+            log("No login")
             continue
 
 

@@ -11,3 +11,6 @@ submitUrl = 'https://hk.sz.gov.cn:8118/passInfo/submitReservation'
 prehandleUrl = 'https://t.captcha.qq.com/cap_union_prehandle'
 verifyUrl = 'https://t.captcha.qq.com/cap_union_new_verify'
 appId = 2060591863
+
+# proxy
+proxyUrl = 'http://py815508.pinyiapi.com:10400'

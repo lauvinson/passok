@@ -19,7 +19,7 @@ from PyQt5.QtWidgets import (
 
 import req
 import settings
-from utils import getDetailParams
+from utils import getDetailParams, log
 
 requests.packages.urllib3.disable_warnings()
 redis_conn = redis.Redis(host='127.0.0.1', port=6379, db=0)
@@ -32,6 +32,7 @@ submitParams = {
 
 cookies = ''
 
+
 # 创建一个子线程
 class UpdateThread(QThread):
     # 创建一个信号，触发时传递当前时间给槽函数
@@ -41,6 +42,9 @@ class UpdateThread(QThread):
         global cookies
         res = req.getDetail(cookies)
         getDetailParams(submitParams, res.text)
+        if len(submitParams) == 2:
+            log('Quota is full')
+            return
         entry_url = settings.confirmUrl.format(submitParams['checkinDate'], submitParams['t'], submitParams['s'])
         self.update_url.emit(entry_url)
 
@@ -80,7 +84,7 @@ class Browser(QWidget):
         self.webView.urlChanged.connect(lambda i: self.urlChange(i.toDisplayString()))
 
         self.jsEdit = QLineEdit()
-        self.jsEdit.setText(os.path.split(os.path.abspath(__file__))[0] + r'/inject.js')
+        self.jsEdit.setText(os.path.abspath('inject.js'))
 
         loadUrlBtn = QPushButton('加载')
         loadUrlBtn.clicked.connect(self.load_url)
@@ -121,7 +125,7 @@ class Browser(QWidget):
         layout.addWidget(self.logEdit)
 
         self.show()
-        self.resize(1024, 900)
+        self.resize(465, 844)
         self.center()
 
     def center(self):
