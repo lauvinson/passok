@@ -26,8 +26,10 @@ redis_conn = redis.Redis(host='127.0.0.1', port=6379, db=0)
 
 # 构造请求参数
 submitParams = {
-    'checkinDate': '2022-06-12',
-    'houseType': '1'
+    'checkinDate': '2022-06-14',
+    'houseType': '1',
+    't': '1655172000134',
+    's': 'bac2e56f23b3a2ce1b5cbd2941b015aa'
 }
 
 cookies = ''
@@ -82,6 +84,7 @@ class Browser(QWidget):
         self.addrEdit = QLineEdit()
         self.addrEdit.returnPressed.connect(self.load_url)
         self.webView.urlChanged.connect(lambda i: self.urlChange(i.toDisplayString()))
+        self.webView.loadFinished.connect(lambda i: self.loadFinish(i))
 
         self.jsEdit = QLineEdit()
         self.jsEdit.setText(os.path.abspath('inject.js'))
@@ -174,13 +177,27 @@ class Browser(QWidget):
     @pyqtSlot()
     def urlChange(self, url):
         self.addrEdit.setText(url)
-        if re.search('/userPage/userCenter', url) is not None:
-            # 创建子线程
-            self.subThread = UpdateThread()
-            # 将子线程中的信号与timeUpdate槽函数绑定
-            self.subThread.update_url.connect(self.load)
-            # 启动子线程（开始更新时间）
-            self.subThread.start()
+        # if re.search('/userPage/userCenter', url) is not None:
+        #     # 创建子线程
+        #     self.subThread = UpdateThread()
+        #     # 将子线程中的信号与timeUpdate槽函数绑定
+        #     self.subThread.update_url.connect(self.load)
+        #     # 启动子线程（开始更新时间）
+        #     self.subThread.start()
+        # if re.search('/passInfo/confirmOrder', url) is not None:
+        #     # 创建子线程
+        #     self.submitThread = SubmitThread()
+        #     # 将子线程中的信号与timeUpdate槽函数绑定
+        #     self.submitThread.submit.connect(self.submit)
+        #     # 启动子线程（开始更新时间）
+        #     self.submitThread.start()
+        pass
+
+    @pyqtSlot()
+    def loadFinish(self, has):
+        if not has:
+            return
+        url = self.addrEdit.text().strip()
         if re.search('/passInfo/confirmOrder', url) is not None:
             # 创建子线程
             self.submitThread = SubmitThread()
@@ -200,8 +217,10 @@ class Browser(QWidget):
         value = cookie.value().data().decode('utf-8')
         cookies += (name + '=' + value + ';')
 
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     b = Browser()
-    b.load('https://hk.sz.gov.cn:8118')
+    entry_url = settings.confirmUrl.format(submitParams['checkinDate'], submitParams['t'], submitParams['s'])
+    b.load(entry_url)
     sys.exit(app.exec_())
