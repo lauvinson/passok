@@ -199,6 +199,7 @@ class Browser(QWidget):
             return
         url = self.addrEdit.text().strip()
         if re.search('/passInfo/confirmOrder', url) is not None:
+            print('开始执行submit监听')
             # 创建子线程
             self.submitThread = SubmitThread()
             # 将子线程中的信号与timeUpdate槽函数绑定
@@ -221,6 +222,5 @@ class Browser(QWidget):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     b = Browser()
-    entry_url = settings.confirmUrl.format(submitParams['checkinDate'], submitParams['t'], submitParams['s'])
-    b.load(entry_url)
+    b.load(settings.userCenterUrl)
     sys.exit(app.exec_())
