@@ -1,12 +1,21 @@
 // user info
 username = 'ef5100126'
 password = 'huo520123'
-checkinDate = '2022-06-14'
-t = '1655172000001'
-s = 'bac2e56f23b3a2ce1b5cbd2941b015aa'
+
 let path = document.location.pathname;
-if (path.endsWith('/userPage/userCenter') || path.endsWith('/error/index')) {
-    window.location.replace('https://hk.sz.gov.cn:8118/passInfo/confirmOrder?checkinDate=' + checkinDate + '&t=' + t + '&s=' + s)
+
+const now = new Date()
+let timeNow = now.getHours();
+let minuteNow = now.getMinutes();
+
+if ((timeNow === 9 || timeNow === 10) && (minuteNow === 59 || minuteNow === 0)) {
+    if (path.endsWith('/userPage/userCenter') || path.endsWith('/error/index') || document.title === '403') {
+        window.location.replace('https://hk.sz.gov.cn:8118/passInfo/confirmOrder?checkinDate=' + checkinDate + '&t=' + t + '&s=' + s)
+    }
+} else {
+    setInterval(function () {
+        window.location.reload()
+    }, 30 * 1000);
 }
 
 Element.prototype.remove = function () {
@@ -20,8 +29,6 @@ NodeList.prototype.remove = HTMLCollection.prototype.remove = function () {
         }
     }
 }
-document.getElementsByClassName("mask").remove()
-document.getElementsByClassName("winpop").remove()
 
 if (path.endsWith('/userPage/login')) {
     document.getElementById('input_idCardNo').value = username
@@ -31,3 +38,9 @@ if (path.endsWith('/userPage/login')) {
 if (path.endsWith('/passInfo/confirmOrder')) {
     document.getElementById('TencentCaptcha').click()
 }
+
+document.getElementsByClassName('systemname')[0].childNodes[1].innerHTML = checkinDate
+document.getElementsByClassName('systemname')[0].childNodes[3].innerHTML = s
+
+document.getElementsByClassName("mask").remove()
+document.getElementsByClassName("winpop").remove()

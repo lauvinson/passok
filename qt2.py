@@ -7,22 +7,20 @@ import sys
 import time
 from datetime import datetime
 
-import redis
 import requests
+from PyQt5 import QtNetwork
 from PyQt5.QtCore import QUrl, pyqtSlot, QThread, pyqtSignal
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineProfile, QWebEngineScript
 from PyQt5.QtWidgets import (
     QWidget, QApplication, QVBoxLayout, QHBoxLayout,
     QDesktopWidget, QTextEdit, QLabel, QLineEdit, QPushButton,
-    QFileDialog, QProgressBar,
+    QFileDialog, QProgressBar, QComboBox,
 )
 
-import req
 import settings
-from utils import getDetailParams, log
+from dates import dates
 
 requests.packages.urllib3.disable_warnings()
-redis_conn = redis.Redis(host='127.0.0.1', port=6379, db=0)
 
 # 构造请求参数
 submitParams = {
@@ -35,20 +33,20 @@ submitParams = {
 cookies = ''
 
 
-# 创建一个子线程
-class UpdateThread(QThread):
-    # 创建一个信号，触发时传递当前时间给槽函数
-    update_url = pyqtSignal(str)
-
-    def run(self):
-        global cookies
-        res = req.getDetail(cookies)
-        getDetailParams(submitParams, res.text)
-        if len(submitParams) == 2:
-            log('Quota is full')
-            return
-        entry_url = settings.confirmUrl.format(submitParams['checkinDate'], submitParams['t'], submitParams['s'])
-        self.update_url.emit(entry_url)
+# # 创建一个子线程
+# class UpdateThread(QThread):
+#     # 创建一个信号，触发时传递当前时间给槽函数
+#     update_url = pyqtSignal(str)
+#
+#     def run(self):
+#         global cookies
+#         res = req.getDetail(cookies)
+#         getDetailParams(submitParams, res.text)
+#         if len(submitParams) == 2:
+#             log('Quota is full')
+#             return
+#         entry_url = settings.confirmUrl.format(submitParams['checkinDate'], submitParams['t'], submitParams['s'])
+#         self.update_url.emit(entry_url)
 
 
 # 创建一个子线程
@@ -89,6 +87,10 @@ class Browser(QWidget):
         self.jsEdit = QLineEdit()
         self.jsEdit.setText(os.path.abspath('inject.js'))
 
+        self.dateChoice = QComboBox()
+        self.dateChoice.addItems(dates.keys())
+        self.dateChoice.currentIndexChanged[str].connect(self.dateChange)  # 条目发生改变，发射信号，传递条目内容
+
         loadUrlBtn = QPushButton('加载')
         loadUrlBtn.clicked.connect(self.load_url)
 
@@ -97,7 +99,7 @@ class Browser(QWidget):
 
         # 导航/工具
         top = QWidget()
-        top.setFixedHeight(80)
+        top.setFixedHeight(120)
         topBox = QVBoxLayout(top)
         topBox.setSpacing(0)
         topBox.setContentsMargins(5, 0, 0, 5)
@@ -106,6 +108,7 @@ class Browser(QWidget):
         progBox = QHBoxLayout()
         progBox.addWidget(progBar)
         topBox.addLayout(progBox)
+        self.webView.loadProgress.connect(progBar.setValue)
 
         naviBox = QHBoxLayout()
         naviBox.addWidget(QLabel('网址'))
@@ -119,7 +122,10 @@ class Browser(QWidget):
         naviBox.addWidget(chooseJsBtn)
         topBox.addLayout(naviBox)
 
-        self.webView.loadProgress.connect(progBar.setValue)
+        naviBox = QHBoxLayout()
+        naviBox.addWidget(QLabel('日期'))
+        naviBox.addWidget(self.dateChoice)
+        topBox.addLayout(naviBox)
 
         # 主界面
         layout = QVBoxLayout(self)
@@ -128,7 +134,7 @@ class Browser(QWidget):
         layout.addWidget(self.logEdit)
 
         self.show()
-        self.resize(465, 844)
+        self.resize(665, 844)
         self.center()
 
     def center(self):
@@ -160,7 +166,13 @@ class Browser(QWidget):
 
         self.profile.scripts().remove(self.script)
         with open(path, 'r') as f:
-            self.script.setSourceCode(f.read())
+            jstr = 'const t = "' + dates[self.dateChoice.currentText()]['t'] + '";' \
+                                                                               'const s = "' + \
+                   dates[self.dateChoice.currentText()]['s'] + '";' \
+                                                               'const checkinDate = "' + \
+                   dates[self.dateChoice.currentText()]['checkinDate'] + '";\n' + \
+                   f.read()
+            self.script.setSourceCode(jstr)
         self.profile.scripts().insert(self.script)
         self.log('injected js ready')
 
@@ -208,9 +220,14 @@ class Browser(QWidget):
             self.submitThread.start()
         pass
 
+    def dateChange(self, i):
+        self.prepare_script()
+        self.log(dates[i]['checkinDate'])
+
     def submit(self):
         self.webView.page().runJavaScript(
-            'if(typeof isCanSubmit !== "undefined" && isCanSubmit) {submitReservation(ticket, randstr)}')
+            'if(typeof isCanSubmit !== "undefined" && isCanSubmit) {submitReservation(ticket, randstr);'
+            'isCanSubmit=true;}')
 
     def __onCookieAdd(self, cookie):
         global cookies
@@ -221,6 +238,12 @@ class Browser(QWidget):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+    if settings.proxyEnable is True:
+        proxy = QtNetwork.QNetworkProxy()
+        proxy.setType(QtNetwork.QNetworkProxy.HttpProxy)
+        proxy.setHostName(settings.proxyHost)
+        proxy.setPort(settings.proxyPort)
+        QtNetwork.QNetworkProxy.setApplicationProxy(proxy)
     b = Browser()
     b.load(settings.userCenterUrl)
     sys.exit(app.exec_())

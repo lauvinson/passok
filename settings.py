@@ -13,4 +13,6 @@ verifyUrl = 'https://t.captcha.qq.com/cap_union_new_verify'
 appId = 2060591863
 
 # proxy
-proxyUrl = 'http://py815508.pinyiapi.com:10400'
+proxyEnable = True
+proxyHost = '127.0.0.1'
+proxyPort = 8888
