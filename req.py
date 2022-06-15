@@ -19,8 +19,8 @@ class MockText(object):
 
 
 proxies = {
-    "http": settings.proxyUrl,
-    "https": settings.proxyUrl,
+    "http": settings.proxyHost + ':' + str(settings.proxyPort),
+    "https": settings.proxyHost + ':' + str(settings.proxyPort),
 }
 
 

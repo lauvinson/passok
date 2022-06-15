@@ -1,7 +1,3 @@
-// user info
-username = 'ef5100126'
-password = 'huo520123'
-
 let path = document.location.pathname;
 
 const now = new Date()
@@ -21,6 +17,11 @@ if ((timeNow === 9 || timeNow === 10) && (minuteNow === 59 || minuteNow === 0)) 
     }, 30 * 1000);
 }
 
+
+// user info
+username = 'ef5100126'
+password = 'huo520123'
+
 Element.prototype.remove = function () {
     this.parentElement.removeChild(this);
 }
@@ -33,14 +34,14 @@ NodeList.prototype.remove = HTMLCollection.prototype.remove = function () {
     }
 }
 
-if (path.endsWith('/userPage/login')) {
+if (path.endsWith('/userPage/login') || path.endsWith('/userPage/userCenter')) {
     document.getElementById('input_idCardNo').value = username
     document.getElementById('input_pwd').value = password
+    document.getElementsByClassName("mask").remove()
+    document.getElementsByClassName("winpop").remove()
 }
 
 if (path.endsWith('/passInfo/confirmOrder')) {
-    document.getElementById('TencentCaptcha').click()
+    document.getElementsByClassName('order-info')[0].style = 'display:none;'
+    document.getElementById('TencentCaptcha').style = 'height:20rem;'
 }
-
-document.getElementsByClassName("mask").remove()
-document.getElementsByClassName("winpop").remove()

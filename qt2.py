@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 '''使用 PyQt5 内嵌浏览器浏览网页，并注入 Javascript 脚本实现自动化操作。'''
 import os
+import random
 import re
 import sys
 import time
@@ -17,6 +18,7 @@ from PyQt5.QtWidgets import (
     QFileDialog, QProgressBar, QComboBox,
 )
 
+import req
 import settings
 from dates import dates
 
@@ -68,7 +70,9 @@ class Browser(QWidget):
 
         # 脚本
         self.profile = QWebEngineProfile.defaultProfile()
+        self.profile.setHttpUserAgent(req.user_agents[random.randint(0, 9999)])
         self.script = QWebEngineScript()
+        self.script.setInjectionPoint(QWebEngineScript.DocumentReady)
         self.prepare_script()
         # 绑定cookie被添加的信号槽
         self.profile.cookieStore().cookieAdded.connect(self.__onCookieAdd)
@@ -166,7 +170,7 @@ class Browser(QWidget):
 
         self.profile.scripts().remove(self.script)
         with open(path, 'r') as f:
-            jstr = 'const targetIndex = "' + str(self.dateChoice.currentIndex()) + '";' +\
+            jstr = 'const targetIndex = "' + str(self.dateChoice.currentIndex()) + '";' + \
                    f.read()
             self.script.setSourceCode(jstr)
         self.profile.scripts().insert(self.script)
@@ -222,8 +226,7 @@ class Browser(QWidget):
 
     def submit(self):
         self.webView.page().runJavaScript(
-            'if(typeof isCanSubmit !== "undefined" && isCanSubmit) {submitReservation(ticket, randstr);'
-            'isCanSubmit=true;}')
+            'document.getElementById("btn_confirmOrder").click()')
 
     def __onCookieAdd(self, cookie):
         global cookies
