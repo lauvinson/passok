@@ -10,7 +10,10 @@ let minuteNow = now.getMinutes();
 
 if ((timeNow === 9 || timeNow === 10) && (minuteNow === 59 || minuteNow === 0)) {
     if (path.endsWith('/userPage/userCenter') || path.endsWith('/error/index') || document.title === '403') {
-        window.location.replace('https://hk.sz.gov.cn:8118/passInfo/confirmOrder?checkinDate=' + checkinDate + '&t=' + t + '&s=' + s)
+        window.location.replace('https://hk.sz.gov.cn:8118/passInfo/detail');
+    }
+    if (path.endsWith('/passInfo/detail') || path.endsWith('/error/index') || document.title === '403') {
+        window.location.replace("https://hk.sz.gov.cn:8118" + document.getElementsByClassName('orange button')[targetIndex].getAttribute('href'));
     }
 } else {
     setInterval(function () {
@@ -38,9 +41,6 @@ if (path.endsWith('/userPage/login')) {
 if (path.endsWith('/passInfo/confirmOrder')) {
     document.getElementById('TencentCaptcha').click()
 }
-
-document.getElementsByClassName('systemname')[0].childNodes[1].innerHTML = checkinDate
-document.getElementsByClassName('systemname')[0].childNodes[3].innerHTML = s
 
 document.getElementsByClassName("mask").remove()
 document.getElementsByClassName("winpop").remove()

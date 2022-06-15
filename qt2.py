@@ -88,7 +88,7 @@ class Browser(QWidget):
         self.jsEdit.setText(os.path.abspath('inject.js'))
 
         self.dateChoice = QComboBox()
-        self.dateChoice.addItems(dates.keys())
+        self.dateChoice.addItems(dates)
         self.dateChoice.currentIndexChanged[str].connect(self.dateChange)  # 条目发生改变，发射信号，传递条目内容
 
         loadUrlBtn = QPushButton('加载')
@@ -166,11 +166,7 @@ class Browser(QWidget):
 
         self.profile.scripts().remove(self.script)
         with open(path, 'r') as f:
-            jstr = 'const t = "' + dates[self.dateChoice.currentText()]['t'] + '";' \
-                                                                               'const s = "' + \
-                   dates[self.dateChoice.currentText()]['s'] + '";' \
-                                                               'const checkinDate = "' + \
-                   dates[self.dateChoice.currentText()]['checkinDate'] + '";\n' + \
+            jstr = 'const targetIndex = "' + str(self.dateChoice.currentIndex()) + '";' +\
                    f.read()
             self.script.setSourceCode(jstr)
         self.profile.scripts().insert(self.script)
@@ -221,8 +217,8 @@ class Browser(QWidget):
         pass
 
     def dateChange(self, i):
+        self.log(i)
         self.prepare_script()
-        self.log(dates[i]['checkinDate'])
 
     def submit(self):
         self.webView.page().runJavaScript(
