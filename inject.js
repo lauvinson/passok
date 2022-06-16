@@ -1,47 +1,44 @@
 let path = document.location.pathname;
 
-const now = new Date()
-let timeNow = now.getHours();
-let minuteNow = now.getMinutes();
-
-if ((timeNow === 9 || timeNow === 10) && (minuteNow === 59 || minuteNow === 0)) {
-    if (path.endsWith('/userPage/userCenter') || path.endsWith('/error/index') || document.title === '403') {
+if (typeof action !== "undefined" && Number(action) === 1) {
+    if (path.endsWith('/userPage/userCenter')) {
         window.location.replace('https://hk.sz.gov.cn:8118/passInfo/detail');
     }
-    if (path.endsWith('/passInfo/detail') || path.endsWith('/error/index') || document.title === '403') {
+    if (path.endsWith('/passInfo/detail')) {
         window.location.replace("https://hk.sz.gov.cn:8118" + document.getElementsByClassName('orange button')[targetIndex].getAttribute('href'));
     }
+
+    // user info
+    username = 'ef5100126'
+    password = 'huo520123'
+
+    if (path.endsWith('/userPage/login')) {
+        document.getElementById('input_idCardNo').value = username
+        document.getElementById('input_pwd').value = password
+    }
+
+
+    if (path.endsWith('/passInfo/confirmOrder')) {
+        document.getElementsByClassName('order-info')[0].style = 'display:none;';
+        document.getElementById('TencentCaptcha').style = 'height:10rem;';
+    }
+
+    Element.prototype.remove = function () {
+        this.parentElement.removeChild(this);
+    }
+
+    NodeList.prototype.remove = HTMLCollection.prototype.remove = function () {
+        for (let i = this.length - 1; i >= 0; i--) {
+            if (this[i] && this[i].parentElement) {
+                this[i].parentElement.removeChild(this[i]);
+            }
+        }
+    }
+
+    document.getElementsByClassName("mask").remove()
+    document.getElementsByClassName("winpop").remove()
 } else {
     setInterval(function () {
         window.location.reload()
-    }, 30 * 1000);
-}
-
-
-// user info
-username = 'ef5100126'
-password = 'huo520123'
-
-Element.prototype.remove = function () {
-    this.parentElement.removeChild(this);
-}
-
-NodeList.prototype.remove = HTMLCollection.prototype.remove = function () {
-    for (let i = this.length - 1; i >= 0; i--) {
-        if (this[i] && this[i].parentElement) {
-            this[i].parentElement.removeChild(this[i]);
-        }
-    }
-}
-
-if (path.endsWith('/userPage/login') || path.endsWith('/userPage/userCenter')) {
-    document.getElementById('input_idCardNo').value = username
-    document.getElementById('input_pwd').value = password
-    document.getElementsByClassName("mask").remove()
-    document.getElementsByClassName("winpop").remove()
-}
-
-if (path.endsWith('/passInfo/confirmOrder')) {
-    document.getElementsByClassName('order-info')[0].style = 'display:none;'
-    document.getElementById('TencentCaptcha').style = 'height:20rem;'
+    }, 60 * 1000);
 }

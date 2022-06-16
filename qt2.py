@@ -11,7 +11,8 @@ from datetime import datetime
 import requests
 from PyQt5 import QtNetwork
 from PyQt5.QtCore import QUrl, pyqtSlot, QThread, pyqtSignal
-from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineProfile, QWebEngineScript
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineProfile, QWebEngineScript, QWebEngineSettings
 from PyQt5.QtWidgets import (
     QWidget, QApplication, QVBoxLayout, QHBoxLayout,
     QDesktopWidget, QTextEdit, QLabel, QLineEdit, QPushButton,
@@ -20,6 +21,7 @@ from PyQt5.QtWidgets import (
 
 import req
 import settings
+from compose.slider_button import SwitchBtn
 from dates import dates
 
 requests.packages.urllib3.disable_warnings()
@@ -72,13 +74,17 @@ class Browser(QWidget):
         self.profile = QWebEngineProfile.defaultProfile()
         self.profile.setHttpUserAgent(req.user_agents[random.randint(0, 9999)])
         self.script = QWebEngineScript()
-        self.script.setInjectionPoint(QWebEngineScript.DocumentReady)
+        # self.script.setInjectionPoint(QWebEngineScript.DocumentReady)
         self.prepare_script()
         # 绑定cookie被添加的信号槽
         self.profile.cookieStore().cookieAdded.connect(self.__onCookieAdd)
+        self.webView.iconChanged.connect(self.__onWindowIconChanged)
+        self.webView.titleChanged.connect(self.__onTitleChanged)
 
     def init_ui(self):
         self.webView = QWebEngineView()
+
+        self.webView.settings().setAttribute(QWebEngineSettings.WebAttribute.ShowScrollBars, False)
 
         self.logEdit = QTextEdit()
         self.logEdit.setFixedHeight(100)
@@ -89,7 +95,15 @@ class Browser(QWidget):
         self.webView.loadFinished.connect(lambda i: self.loadFinish(i))
 
         self.jsEdit = QLineEdit()
+        self.jsEdit.setEnabled(False)
         self.jsEdit.setText(os.path.abspath('inject.js'))
+
+        self.actionChoice = QComboBox()
+        self.actionChoice.addItems(['关闭', '开启'])
+        self.actionChoice.currentIndexChanged[int].connect(self.actionChange)  # 条目发生改变，发射信号，传递条目内容
+
+        self.slider = SwitchBtn(self)
+        self.slider.checkedChanged.connect(self.actionChange)
 
         self.dateChoice = QComboBox()
         self.dateChoice.addItems(dates)
@@ -103,12 +117,14 @@ class Browser(QWidget):
 
         # 导航/工具
         top = QWidget()
-        top.setFixedHeight(120)
+        top.setFixedHeight(160)
         topBox = QVBoxLayout(top)
         topBox.setSpacing(0)
-        topBox.setContentsMargins(5, 0, 0, 5)
+        topBox.setContentsMargins(0, 0, 0, 0)
 
         progBar = QProgressBar()
+        progBar.setFixedHeight(10)
+        progBar.setTextVisible(False)
         progBox = QHBoxLayout()
         progBox.addWidget(progBar)
         topBox.addLayout(progBox)
@@ -121,14 +137,18 @@ class Browser(QWidget):
         topBox.addLayout(naviBox)
 
         naviBox = QHBoxLayout()
-        naviBox.addWidget(QLabel('注入脚本文件'))
+        naviBox.addWidget(QLabel('脚本'))
         naviBox.addWidget(self.jsEdit)
         naviBox.addWidget(chooseJsBtn)
         topBox.addLayout(naviBox)
 
         naviBox = QHBoxLayout()
-        naviBox.addWidget(QLabel('日期'))
-        naviBox.addWidget(self.dateChoice)
+        naviBox.addWidget(QLabel('疯狗'), 1)
+        # naviBox.addWidget(self.actionChoice)
+        naviBox.addWidget(self.slider, 1)
+        naviBox.addWidget(QLabel(), 6)
+        naviBox.addWidget(QLabel('日期'), 1)
+        naviBox.addWidget(self.dateChoice, 1)
         topBox.addLayout(naviBox)
 
         # 主界面
@@ -140,6 +160,12 @@ class Browser(QWidget):
         self.show()
         self.resize(665, 844)
         self.center()
+
+    def __onWindowIconChanged(self, icon):
+        self.setWindowIcon(icon)
+
+    def __onTitleChanged(self, title):
+        self.setWindowTitle(title)
 
     def center(self):
         qr = self.frameGeometry()
@@ -171,6 +197,7 @@ class Browser(QWidget):
         self.profile.scripts().remove(self.script)
         with open(path, 'r') as f:
             jstr = 'const targetIndex = "' + str(self.dateChoice.currentIndex()) + '";' + \
+                   'const action = "' + str(int(self.slider.checked)) + '";' + \
                    f.read()
             self.script.setSourceCode(jstr)
         self.profile.scripts().insert(self.script)
@@ -224,6 +251,13 @@ class Browser(QWidget):
         self.log(i)
         self.prepare_script()
 
+    def actionChange(self, i):
+        if i:
+            self.log('格局打开')
+        else:
+            self.log('格局小了')
+        self.prepare_script()
+
     def submit(self):
         self.webView.page().runJavaScript(
             'document.getElementById("btn_confirmOrder").click()')
@@ -237,6 +271,7 @@ class Browser(QWidget):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+
     if settings.proxyEnable is True:
         proxy = QtNetwork.QNetworkProxy()
         proxy.setType(QtNetwork.QNetworkProxy.HttpProxy)
