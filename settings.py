@@ -13,6 +13,6 @@ verifyUrl = 'https://t.captcha.qq.com/cap_union_new_verify'
 appId = 2060591863
 
 # proxy
-proxyEnable = True
+proxyEnable = False
 proxyHost = '127.0.0.1'
 proxyPort = 8888

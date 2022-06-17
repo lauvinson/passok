@@ -97,8 +97,9 @@ def validate(ua):
 
 
 def run():
-    res = req.getDetailMock()
-    getDetailParams(submitParams, res.text)
+    res = req.getDetail()
+    print(res.text)
+    # getDetailParams(submitParams, res.text)
     # validate(res.ua)
     # log("等待验证")
     # while True:
@@ -127,6 +128,7 @@ def run():
 
 
 if __name__ == '__main__':
+    run()
     # options = webdriver.Options()
     # 设置代理
     # options.add_argument("--proxy-server=http://127.0.0.1:9999")
@@ -136,20 +138,20 @@ if __name__ == '__main__':
     # options.add_argument(f'user-agent={req.user_agents[req.i % 24]}')
     # 一定要注意，=两边不能有空格，不能是这样--proxy-server = http://202.20.16.82:10152
     # browser = webdriver.WebDriver(options=options)
-    threading.Thread(target=lambda: run()).start()
-    while True:
-        vUrl: Awaitable = redis_conn.get("validateShowHandleUrl")
-        if vUrl is not None:
-            redis_conn.delete("validateShowHandleUrl")
-            app = QApplication(sys.argv)
-            proxy = QtNetwork.QNetworkProxy()
-            proxy.setType(QtNetwork.QNetworkProxy.HttpProxy)
-            proxy.setHostName("127.0.0.1")
-            proxy.setPort(9999)
-            QtNetwork.QNetworkProxy.setApplicationProxy(proxy)
+    # threading.Thread(target=lambda: run()).start()
+    # while True:
+    #     vUrl: Awaitable = redis_conn.get("validateShowHandleUrl")
+    #     if vUrl is not None:
+    #         redis_conn.delete("validateShowHandleUrl")
+    #         app = QApplication(sys.argv)
+            # proxy = QtNetwork.QNetworkProxy()
+            # proxy.setType(QtNetwork.QNetworkProxy.HttpProxy)
+            # proxy.setHostName("127.0.0.1")
+            # proxy.setPort(9999)
+            # QtNetwork.QNetworkProxy.setApplicationProxy(proxy)
             # log(vUrl)
-            window = MainWindow(str(vUrl, 'utf-8'))
+            # window = MainWindow(str(vUrl, 'utf-8'))
             # window.show()
-            sys.exit(app.exec_())
+            # sys.exit(app.exec_())
     # window = webview.create_window('请快速验证', html='<h1>请快速验证通过!<h1>', width=390, height=844)
     # webview.start(run, window, debug=True)

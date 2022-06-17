@@ -1,5 +1,3 @@
-import sys
-
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
@@ -13,11 +11,11 @@ class SwitchBtn(QWidget):
         super(QWidget, self).__init__(parent)
 
         self.checked = False
-        self.bgColorOff = QColor(255, 255, 255)
-        self.bgColorOn = QColor(0, 0, 0)
+        self.bgColorOff = QColor(204, 204, 204)
+        self.bgColorOn = QColor(0, 255, 102)
 
-        self.sliderColorOff = QColor(100, 100, 100)
-        self.sliderColorOn = QColor(100, 184, 255)
+        self.sliderColorOff = QColor(255, 255, 255)
+        self.sliderColorOn = QColor(255, 255, 255)
 
         self.textColorOff = QColor(143, 143, 143)
         self.textColorOn = QColor(255, 255, 255)
@@ -28,7 +26,7 @@ class SwitchBtn(QWidget):
         self.space = 2
         self.rectRadius = 5
 
-        self.step = self.width() / 50
+        self.step = self.width() / 40
         self.startX = 0
         self.endX = 0
 
@@ -63,7 +61,7 @@ class SwitchBtn(QWidget):
         self.checkedChanged.emit(self.checked)
 
         # 每次移动的步长为宽度的50分之一
-        self.step = self.width() / 50
+        self.step = self.width() / 40
         # 状态切换改变后自动计算终点坐标
         if self.checked:
             self.endX = self.width() - self.height()
