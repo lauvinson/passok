@@ -1,21 +1,8 @@
-import base64
-import http
-import json
-import re
-import sys
-import threading
-import time
-from typing import Awaitable
-
 import redis
 import requests
-from PyQt5 import QtNetwork
-from PyQt5.QtWidgets import QApplication
 
 import req
-import settings
-from qt import MainWindow
-from utils import getDetailParams, log
+from utils import log
 
 requests.packages.urllib3.disable_warnings()
 

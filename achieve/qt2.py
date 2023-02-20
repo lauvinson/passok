@@ -11,7 +11,6 @@ from datetime import datetime
 import requests
 from PyQt5 import QtNetwork
 from PyQt5.QtCore import QUrl, pyqtSlot, QThread, pyqtSignal
-from PyQt5.QtGui import QIcon
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineProfile, QWebEngineScript, QWebEngineSettings
 from PyQt5.QtWidgets import (
     QWidget, QApplication, QVBoxLayout, QHBoxLayout,

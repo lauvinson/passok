@@ -8,7 +8,7 @@ import settings
 from utils import log
 
 i: int = 0
-with open("./headers.txt", "r") as tf:
+with open("headers.txt", "r") as tf:
     user_agents = tf.read().split('\n')
 
 
