@@ -1,4 +1,4 @@
-
+// 显示详情
         function showIframe(url,w,h){
             //添加iframe
             var if_w = w;
@@ -18,6 +18,7 @@
             $("#iFrame").attr("src", url)
         };
 
+// 循环遍历
         function test(i) {
         if (i < document.getElementsByClassName('job-list-box')[0].childNodes.length) {
             try {
@@ -25,17 +26,20 @@
             }catch (e) {
 
             }
+setTimeout(function() {
+               if(document.getElementById('iFrame').contentWindow.document.getElementsByClassName('btn-startchat')[0].text.trim() === '立即沟通') document.getElementById('iFrame').contentWindow.document.getElementsByClassName('btn-startchat')[0].click()
+            }, 3000)
             setTimeout(function() {
                 document.getElementById('iFrame').remove()
                 test(i + 1);
-            }, 3000)
+            }, 5000)
         } else {
             console.log('翻页')
             //翻页
             document.getElementsByClassName('options-pages')[0].childNodes[document.getElementsByClassName('options-pages')[0].childNodes.length - 1].click()
             setTimeout(function(){
                 test(0)
-            }, 3000)
+            }, 5000)
         }
         }
 
